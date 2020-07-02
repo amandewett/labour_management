@@ -14,9 +14,21 @@ class WorkerDetailsActivity extends StatefulWidget {
   }
 }
 
-class WorkerDetailsActivityState extends State<WorkerDetailsActivity> {
+class WorkerDetailsActivityState extends State<WorkerDetailsActivity> with SingleTickerProviderStateMixin {
+  TabController _tabController;
+  String _selectedDate = "";
+  String _selectedPaymentDate = "";
+  int _selectedIntDate = 0;
+  int _selectedIntPaymentDate = 0;
+  static DateTime _currentDate = DateTime.now();
+
   @override
   void initState() {
+    _tabController = new TabController(length: 2, vsync: this);
+    _selectedDate = "${_currentDate.day}-${_currentDate.month}-${_currentDate.year}";
+    _selectedPaymentDate = "${_currentDate.day}-${_currentDate.month}-${_currentDate.year}";
+    _selectedIntDate = _currentDate.millisecondsSinceEpoch;
+    _selectedIntPaymentDate = _currentDate.millisecondsSinceEpoch;
     super.initState();
   }
 
@@ -31,11 +43,20 @@ class WorkerDetailsActivityState extends State<WorkerDetailsActivity> {
       child: SafeArea(
         child: Scaffold(
           backgroundColor: backgroundColor,
+          floatingActionButton: FloatingActionButton(
+            onPressed: () {
+              _addPaymentDialog();
+            },
+            tooltip: "Add new payment",
+            child: Icon(
+              Icons.add,
+            ),
+          ),
           body: Stack(
             children: <Widget>[
               Container(
                 width: MediaQuery.of(context).size.width,
-                height: SizeConfig.safeBlockVertical * 25.0,
+                height: SizeConfig.safeBlockVertical * 13.0,
                 child: CustomPaint(
                   painter: CustomDesign(),
                 ),
@@ -49,7 +70,7 @@ class WorkerDetailsActivityState extends State<WorkerDetailsActivity> {
                     centerTitle: true,
                     backgroundColor: primaryColor,
                     title: Text(
-                      "Bhaiya ji naam",
+                      "Worker's Name",
                       style: TextStyle(
                         fontFamily: Constants.OPEN_SANS_FONT_FAMILY,
                         fontWeight: FontWeight.bold,
@@ -60,7 +81,41 @@ class WorkerDetailsActivityState extends State<WorkerDetailsActivity> {
                   Container(
                     width: MediaQuery.of(context).size.width,
                     margin: EdgeInsets.only(
-                      top: SizeConfig.safeBlockVertical * 20.0,
+                      top: SizeConfig.safeBlockVertical * 5.0,
+                      left: SizeConfig.safeBlockVertical * 5.0,
+                      right: SizeConfig.safeBlockVertical * 5.0,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      mainAxisSize: MainAxisSize.max,
+                      children: <Widget>[
+                        Container(
+                          child: Text(
+                            "₹ 5000",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontFamily: Constants.OPEN_SANS_FONT_FAMILY,
+                              fontSize: SizeConfig.safeBlockHorizontal * 10.0,
+                            ),
+                          ),
+                        ),
+                        Container(
+                          child: Text(
+                            "Balance",
+                            style: TextStyle(
+                              fontFamily: Constants.OPEN_SANS_FONT_FAMILY,
+                              fontSize: SizeConfig.safeBlockHorizontal * 4.0,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    width: MediaQuery.of(context).size.width,
+                    margin: EdgeInsets.only(
+                      top: SizeConfig.safeBlockVertical * 2.0,
                       left: SizeConfig.safeBlockVertical * 5.0,
                       right: SizeConfig.safeBlockVertical * 5.0,
                     ),
@@ -74,6 +129,22 @@ class WorkerDetailsActivityState extends State<WorkerDetailsActivity> {
                             "Absent",
                             style: TextStyle(
                                 color: primaryColor, fontFamily: Constants.OPEN_SANS_FONT_FAMILY, fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                        InkWell(
+                          onTap: () {
+                            _datePicker();
+                          },
+                          child: Shimmer.fromColors(
+                            child: Text(
+                              _selectedDate,
+                              style: TextStyle(
+                                fontFamily: Constants.OPEN_SANS_FONT_FAMILY,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            baseColor: primaryColor,
+                            highlightColor: primaryLightColor,
                           ),
                         ),
                         MaterialButton(
@@ -92,144 +163,308 @@ class WorkerDetailsActivityState extends State<WorkerDetailsActivity> {
                     ),
                   ),
                   Expanded(
-                    child: Container(
-                      width: MediaQuery.of(context).size.width,
-                      child: SingleChildScrollView(
-                        child: FutureBuilder(
-                          future: null,
-                          builder: (BuildContext futureContext, AsyncSnapshot snapshot) {
-                            if (snapshot.hasData) {
-                              return Container();
-                            } else {
-                              return Container(
-                                child: DataTable(
-                                  columns: [
-                                    DataColumn(
-                                      label: Text(
-                                        "Date",
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontFamily: Constants.OPEN_SANS_FONT_FAMILY,
-                                          fontSize: SizeConfig.safeBlockHorizontal * 5.0,
-                                        ),
-                                      ),
-                                    ),
-                                    DataColumn(
-                                      label: Text(
-                                        "Amount",
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontFamily: Constants.OPEN_SANS_FONT_FAMILY,
-                                          fontSize: SizeConfig.safeBlockHorizontal * 5.0,
-                                        ),
-                                      ),
-                                    ),
-                                    DataColumn(
-                                      label: Text(
-                                        "Attendance",
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontFamily: Constants.OPEN_SANS_FONT_FAMILY,
-                                          fontSize: SizeConfig.safeBlockHorizontal * 5.0,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                  rows: [
-                                    DataRow(cells: [
-                                      DataCell(Shimmer.fromColors(
-                                        child: Container(
-                                          width: SizeConfig.safeBlockHorizontal * 15.0,
-                                          height: 10.0,
-                                          color: Colors.grey,
-                                        ),
-                                        baseColor: Colors.grey.shade300,
-                                        highlightColor: Colors.white,
-                                      )),
-                                      DataCell(Shimmer.fromColors(
-                                        child: Container(
-                                          width: SizeConfig.safeBlockHorizontal * 15.0,
-                                          height: 10.0,
-                                          color: Colors.grey,
-                                        ),
-                                        baseColor: Colors.grey.shade300,
-                                        highlightColor: Colors.white,
-                                      )),
-                                      DataCell(Shimmer.fromColors(
-                                        child: Container(
-                                          width: SizeConfig.safeBlockHorizontal * 15.0,
-                                          height: 10.0,
-                                          color: Colors.grey,
-                                        ),
-                                        baseColor: Colors.grey.shade300,
-                                        highlightColor: Colors.white,
-                                      )),
-                                    ]),
-                                    DataRow(cells: [
-                                      DataCell(Shimmer.fromColors(
-                                        child: Container(
-                                          width: SizeConfig.safeBlockHorizontal * 15.0,
-                                          height: 10.0,
-                                          color: Colors.grey,
-                                        ),
-                                        baseColor: Colors.grey.shade300,
-                                        highlightColor: Colors.white,
-                                      )),
-                                      DataCell(Shimmer.fromColors(
-                                        child: Container(
-                                          width: SizeConfig.safeBlockHorizontal * 15.0,
-                                          height: 10.0,
-                                          color: Colors.grey,
-                                        ),
-                                        baseColor: Colors.grey.shade300,
-                                        highlightColor: Colors.white,
-                                      )),
-                                      DataCell(Shimmer.fromColors(
-                                        child: Container(
-                                          width: SizeConfig.safeBlockHorizontal * 15.0,
-                                          height: 10.0,
-                                          color: Colors.grey,
-                                        ),
-                                        baseColor: Colors.grey.shade300,
-                                        highlightColor: Colors.white,
-                                      )),
-                                    ]),
-                                    DataRow(cells: [
-                                      DataCell(Shimmer.fromColors(
-                                        child: Container(
-                                          width: SizeConfig.safeBlockHorizontal * 15.0,
-                                          height: 10.0,
-                                          color: Colors.grey,
-                                        ),
-                                        baseColor: Colors.grey.shade300,
-                                        highlightColor: Colors.white,
-                                      )),
-                                      DataCell(Shimmer.fromColors(
-                                        child: Container(
-                                          width: SizeConfig.safeBlockHorizontal * 15.0,
-                                          height: 10.0,
-                                          color: Colors.grey,
-                                        ),
-                                        baseColor: Colors.grey.shade300,
-                                        highlightColor: Colors.white,
-                                      )),
-                                      DataCell(Shimmer.fromColors(
-                                        child: Container(
-                                          width: SizeConfig.safeBlockHorizontal * 15.0,
-                                          height: 10.0,
-                                          color: Colors.grey,
-                                        ),
-                                        baseColor: Colors.grey.shade300,
-                                        highlightColor: Colors.white,
-                                      )),
-                                    ]),
-                                  ],
-                                ),
-                              );
-                            }
-                          },
+                    child: Column(
+                      children: <Widget>[
+                        TabBar(
+                          controller: _tabController,
+                          unselectedLabelColor: Colors.grey.shade500,
+                          indicatorColor: accentColor,
+                          indicatorSize: TabBarIndicatorSize.tab,
+                          tabs: <Widget>[
+                            new Tab(
+                              text: "Attendance",
+                            ),
+                            new Tab(
+                              text: "Payments",
+                            ),
+                          ],
                         ),
-                      ),
+                        Expanded(
+                          child: TabBarView(
+                            controller: _tabController,
+                            children: <Widget>[
+                              new Container(
+                                width: MediaQuery.of(context).size.width,
+                                child: SingleChildScrollView(
+                                  child: FutureBuilder(
+                                    future: null,
+                                    builder: (BuildContext futureContext, AsyncSnapshot snapshot) {
+                                      if (snapshot.hasData) {
+                                        return Container();
+                                      } else {
+                                        return Container(
+                                          child: DataTable(
+                                            columns: [
+                                              DataColumn(
+                                                label: Text(
+                                                  "Date",
+                                                  style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontFamily: Constants.OPEN_SANS_FONT_FAMILY,
+                                                    fontSize: SizeConfig.safeBlockHorizontal * 5.0,
+                                                  ),
+                                                ),
+                                              ),
+                                              DataColumn(
+                                                label: Text(
+                                                  "Amount",
+                                                  style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontFamily: Constants.OPEN_SANS_FONT_FAMILY,
+                                                    fontSize: SizeConfig.safeBlockHorizontal * 5.0,
+                                                  ),
+                                                ),
+                                              ),
+                                              DataColumn(
+                                                label: Text(
+                                                  "Attendance",
+                                                  style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontFamily: Constants.OPEN_SANS_FONT_FAMILY,
+                                                    fontSize: SizeConfig.safeBlockHorizontal * 5.0,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                            rows: [
+                                              DataRow(cells: [
+                                                DataCell(Shimmer.fromColors(
+                                                  child: Container(
+                                                    width: SizeConfig.safeBlockHorizontal * 15.0,
+                                                    height: 10.0,
+                                                    color: Colors.grey,
+                                                  ),
+                                                  baseColor: Colors.grey.shade300,
+                                                  highlightColor: Colors.white,
+                                                )),
+                                                DataCell(Shimmer.fromColors(
+                                                  child: Container(
+                                                    width: SizeConfig.safeBlockHorizontal * 15.0,
+                                                    height: 10.0,
+                                                    color: Colors.grey,
+                                                  ),
+                                                  baseColor: Colors.grey.shade300,
+                                                  highlightColor: Colors.white,
+                                                )),
+                                                DataCell(Shimmer.fromColors(
+                                                  child: Container(
+                                                    width: SizeConfig.safeBlockHorizontal * 15.0,
+                                                    height: 10.0,
+                                                    color: Colors.grey,
+                                                  ),
+                                                  baseColor: Colors.grey.shade300,
+                                                  highlightColor: Colors.white,
+                                                )),
+                                              ]),
+                                              DataRow(cells: [
+                                                DataCell(Shimmer.fromColors(
+                                                  child: Container(
+                                                    width: SizeConfig.safeBlockHorizontal * 15.0,
+                                                    height: 10.0,
+                                                    color: Colors.grey,
+                                                  ),
+                                                  baseColor: Colors.grey.shade300,
+                                                  highlightColor: Colors.white,
+                                                )),
+                                                DataCell(Shimmer.fromColors(
+                                                  child: Container(
+                                                    width: SizeConfig.safeBlockHorizontal * 15.0,
+                                                    height: 10.0,
+                                                    color: Colors.grey,
+                                                  ),
+                                                  baseColor: Colors.grey.shade300,
+                                                  highlightColor: Colors.white,
+                                                )),
+                                                DataCell(Shimmer.fromColors(
+                                                  child: Container(
+                                                    width: SizeConfig.safeBlockHorizontal * 15.0,
+                                                    height: 10.0,
+                                                    color: Colors.grey,
+                                                  ),
+                                                  baseColor: Colors.grey.shade300,
+                                                  highlightColor: Colors.white,
+                                                )),
+                                              ]),
+                                              DataRow(cells: [
+                                                DataCell(Shimmer.fromColors(
+                                                  child: Container(
+                                                    width: SizeConfig.safeBlockHorizontal * 15.0,
+                                                    height: 10.0,
+                                                    color: Colors.grey,
+                                                  ),
+                                                  baseColor: Colors.grey.shade300,
+                                                  highlightColor: Colors.white,
+                                                )),
+                                                DataCell(Shimmer.fromColors(
+                                                  child: Container(
+                                                    width: SizeConfig.safeBlockHorizontal * 15.0,
+                                                    height: 10.0,
+                                                    color: Colors.grey,
+                                                  ),
+                                                  baseColor: Colors.grey.shade300,
+                                                  highlightColor: Colors.white,
+                                                )),
+                                                DataCell(Shimmer.fromColors(
+                                                  child: Container(
+                                                    width: SizeConfig.safeBlockHorizontal * 15.0,
+                                                    height: 10.0,
+                                                    color: Colors.grey,
+                                                  ),
+                                                  baseColor: Colors.grey.shade300,
+                                                  highlightColor: Colors.white,
+                                                )),
+                                              ]),
+                                            ],
+                                          ),
+                                        );
+                                      }
+                                    },
+                                  ),
+                                ),
+                              ),
+                              new Container(
+                                width: MediaQuery.of(context).size.width,
+                                child: SingleChildScrollView(
+                                  child: FutureBuilder(
+                                    future: null,
+                                    builder: (BuildContext futureContext, AsyncSnapshot snapshot) {
+                                      if (snapshot.hasData) {
+                                        return Container();
+                                      } else {
+                                        return Container(
+                                          child: DataTable(
+                                            columns: [
+                                              DataColumn(
+                                                label: Text(
+                                                  "Date",
+                                                  style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontFamily: Constants.OPEN_SANS_FONT_FAMILY,
+                                                    fontSize: SizeConfig.safeBlockHorizontal * 5.0,
+                                                  ),
+                                                ),
+                                              ),
+                                              DataColumn(
+                                                label: Text(
+                                                  "Amount",
+                                                  style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontFamily: Constants.OPEN_SANS_FONT_FAMILY,
+                                                    fontSize: SizeConfig.safeBlockHorizontal * 5.0,
+                                                  ),
+                                                ),
+                                              ),
+                                              DataColumn(
+                                                label: Text(
+                                                  "Attendance",
+                                                  style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontFamily: Constants.OPEN_SANS_FONT_FAMILY,
+                                                    fontSize: SizeConfig.safeBlockHorizontal * 5.0,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                            rows: [
+                                              DataRow(cells: [
+                                                DataCell(Shimmer.fromColors(
+                                                  child: Container(
+                                                    width: SizeConfig.safeBlockHorizontal * 15.0,
+                                                    height: 10.0,
+                                                    color: Colors.grey,
+                                                  ),
+                                                  baseColor: Colors.grey.shade300,
+                                                  highlightColor: Colors.white,
+                                                )),
+                                                DataCell(Shimmer.fromColors(
+                                                  child: Container(
+                                                    width: SizeConfig.safeBlockHorizontal * 15.0,
+                                                    height: 10.0,
+                                                    color: Colors.grey,
+                                                  ),
+                                                  baseColor: Colors.grey.shade300,
+                                                  highlightColor: Colors.white,
+                                                )),
+                                                DataCell(Shimmer.fromColors(
+                                                  child: Container(
+                                                    width: SizeConfig.safeBlockHorizontal * 15.0,
+                                                    height: 10.0,
+                                                    color: Colors.grey,
+                                                  ),
+                                                  baseColor: Colors.grey.shade300,
+                                                  highlightColor: Colors.white,
+                                                )),
+                                              ]),
+                                              DataRow(cells: [
+                                                DataCell(Shimmer.fromColors(
+                                                  child: Container(
+                                                    width: SizeConfig.safeBlockHorizontal * 15.0,
+                                                    height: 10.0,
+                                                    color: Colors.grey,
+                                                  ),
+                                                  baseColor: Colors.grey.shade300,
+                                                  highlightColor: Colors.white,
+                                                )),
+                                                DataCell(Shimmer.fromColors(
+                                                  child: Container(
+                                                    width: SizeConfig.safeBlockHorizontal * 15.0,
+                                                    height: 10.0,
+                                                    color: Colors.grey,
+                                                  ),
+                                                  baseColor: Colors.grey.shade300,
+                                                  highlightColor: Colors.white,
+                                                )),
+                                                DataCell(Shimmer.fromColors(
+                                                  child: Container(
+                                                    width: SizeConfig.safeBlockHorizontal * 15.0,
+                                                    height: 10.0,
+                                                    color: Colors.grey,
+                                                  ),
+                                                  baseColor: Colors.grey.shade300,
+                                                  highlightColor: Colors.white,
+                                                )),
+                                              ]),
+                                              DataRow(cells: [
+                                                DataCell(Shimmer.fromColors(
+                                                  child: Container(
+                                                    width: SizeConfig.safeBlockHorizontal * 15.0,
+                                                    height: 10.0,
+                                                    color: Colors.grey,
+                                                  ),
+                                                  baseColor: Colors.grey.shade300,
+                                                  highlightColor: Colors.white,
+                                                )),
+                                                DataCell(Shimmer.fromColors(
+                                                  child: Container(
+                                                    width: SizeConfig.safeBlockHorizontal * 15.0,
+                                                    height: 10.0,
+                                                    color: Colors.grey,
+                                                  ),
+                                                  baseColor: Colors.grey.shade300,
+                                                  highlightColor: Colors.white,
+                                                )),
+                                                DataCell(Shimmer.fromColors(
+                                                  child: Container(
+                                                    width: SizeConfig.safeBlockHorizontal * 15.0,
+                                                    height: 10.0,
+                                                    color: Colors.grey,
+                                                  ),
+                                                  baseColor: Colors.grey.shade300,
+                                                  highlightColor: Colors.white,
+                                                )),
+                                              ]),
+                                            ],
+                                          ),
+                                        );
+                                      }
+                                    },
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -239,5 +474,84 @@ class WorkerDetailsActivityState extends State<WorkerDetailsActivity> {
         ),
       ),
     );
+  }
+
+  _datePicker() {
+    return showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(4000),
+    ).then((newDate) {
+      setState(() {
+        _selectedIntDate = newDate.millisecondsSinceEpoch;
+        _selectedDate = "${newDate.day}-${newDate.month}-${newDate.year}";
+      });
+    });
+  }
+
+  _paymentDatePicker(setState) {
+    return showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(4000),
+    ).then((newDate) {
+      setState(() {
+        _selectedIntPaymentDate = newDate.millisecondsSinceEpoch;
+        _selectedPaymentDate = "${newDate.day}-${newDate.month}-${newDate.year}";
+      });
+    });
+  }
+
+  _addPaymentDialog() {
+    return showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext dialogContext) {
+          return StatefulBuilder(builder: (statefulContext, setState){
+            return AlertDialog(
+              title: Container(
+                width: MediaQuery.of(dialogContext).size.width,
+                child: Center(child: Text("Add Payment")),
+              ),
+              content: SingleChildScrollView(
+                child: Container(
+                  width: MediaQuery.of(dialogContext).size.width,
+                  child: Column(
+                    children: <Widget>[
+                      InkWell(
+                        onTap: () {
+                          _paymentDatePicker(setState);
+                        },
+                        child: Shimmer.fromColors(
+                          child: Text(
+                            _selectedPaymentDate,
+                            style: TextStyle(
+                              fontFamily: Constants.OPEN_SANS_FONT_FAMILY,
+                              fontWeight: FontWeight.bold,
+                              fontSize: SizeConfig.safeBlockHorizontal*5.0,
+                            ),
+                          ),
+                          baseColor: primaryColor,
+                          highlightColor: primaryLightColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              actions: <Widget>[
+                FlatButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: Text("Cancel"),
+                ),
+                FlatButton(onPressed: () {}, child: Text("Ok")),
+              ],
+            );
+          },);
+        });
   }
 }
