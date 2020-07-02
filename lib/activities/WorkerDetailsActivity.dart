@@ -15,6 +15,8 @@ class WorkerDetailsActivity extends StatefulWidget {
 }
 
 class WorkerDetailsActivityState extends State<WorkerDetailsActivity> with SingleTickerProviderStateMixin {
+  var _newPaymentFormKey = GlobalKey<FormState>();
+  var _paymentAmountController = TextEditingController();
   TabController _tabController;
   String _selectedDate = "";
   String _selectedPaymentDate = "";
@@ -509,49 +511,101 @@ class WorkerDetailsActivityState extends State<WorkerDetailsActivity> with Singl
         context: context,
         barrierDismissible: false,
         builder: (BuildContext dialogContext) {
-          return StatefulBuilder(builder: (statefulContext, setState){
-            return AlertDialog(
-              title: Container(
-                width: MediaQuery.of(dialogContext).size.width,
-                child: Center(child: Text("Add Payment")),
-              ),
-              content: SingleChildScrollView(
-                child: Container(
+          return StatefulBuilder(
+            builder: (statefulContext, setState) {
+              return AlertDialog(
+                title: Container(
                   width: MediaQuery.of(dialogContext).size.width,
-                  child: Column(
-                    children: <Widget>[
-                      InkWell(
-                        onTap: () {
-                          _paymentDatePicker(setState);
-                        },
-                        child: Shimmer.fromColors(
-                          child: Text(
-                            _selectedPaymentDate,
-                            style: TextStyle(
-                              fontFamily: Constants.OPEN_SANS_FONT_FAMILY,
-                              fontWeight: FontWeight.bold,
-                              fontSize: SizeConfig.safeBlockHorizontal*5.0,
+                  child: Center(child: Text("Add Payment")),
+                ),
+                content: SingleChildScrollView(
+                  child: Form(
+                    key: _newPaymentFormKey,
+                    child: Container(
+                      width: MediaQuery.of(dialogContext).size.width,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.max,
+                        children: <Widget>[
+                          InkWell(
+                            onTap: () {
+                              _paymentDatePicker(setState);
+                            },
+                            child: Shimmer.fromColors(
+                              child: Text(
+                                _selectedPaymentDate,
+                                style: TextStyle(
+                                  fontFamily: Constants.OPEN_SANS_FONT_FAMILY,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: SizeConfig.safeBlockHorizontal * 5.0,
+                                ),
+                              ),
+                              baseColor: primaryColor,
+                              highlightColor: primaryLightColor,
                             ),
                           ),
-                          baseColor: primaryColor,
-                          highlightColor: primaryLightColor,
-                        ),
+                          Container(
+                            padding: EdgeInsets.only(
+                              top: SizeConfig.safeBlockVertical * 3.0,
+                            ),
+                            child: TextFormField(
+                              controller: _paymentAmountController,
+                              keyboardType: TextInputType.number,
+                              maxLines: 1,
+                              style: TextStyle(
+                                color: dashboardCounterColor,
+                                fontFamily: Constants.OPEN_SANS_FONT_FAMILY,
+                              ),
+                              decoration: InputDecoration(
+                                labelText: "Amount",
+                                labelStyle: TextStyle(
+                                  color: primaryColor,
+                                  fontSize: SizeConfig.safeBlockHorizontal * 4,
+                                  fontFamily: Constants.OPEN_SANS_FONT_FAMILY,
+                                ),
+                                hintText: "Please enter a amount",
+                                hintStyle: TextStyle(
+                                  fontFamily: Constants.OPEN_SANS_FONT_FAMILY,
+                                  color: dashboardCounterColor,
+                                ),
+                                border: OutlineInputBorder(),
+                                errorBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(
+                                    color: Colors.red,
+                                  ),
+                                ),
+                              ),
+                              validator: (String value) {
+                                if (value.isEmpty) {
+                                  return Constants.EMPTY_FIELD_ERROR;
+                                } else {
+                                  return null;
+                                }
+                              },
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
-              ),
-              actions: <Widget>[
-                FlatButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: Text("Cancel"),
-                ),
-                FlatButton(onPressed: () {}, child: Text("Ok")),
-              ],
-            );
-          },);
+                actions: <Widget>[
+                  FlatButton(
+                    onPressed: () {
+                      FocusScope.of(context).requestFocus(new FocusNode());
+                      Navigator.pop(context);
+                    },
+                    child: Text("Cancel"),
+                  ),
+                  FlatButton(
+                      onPressed: () {
+                        FocusScope.of(context).requestFocus(new FocusNode());
+                        Navigator.pop(context);
+                      },
+                      child: Text("Ok")),
+                ],
+              );
+            },
+          );
         });
   }
 }
