@@ -36,7 +36,7 @@ class SplashActivityState extends State<SplashActivity> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (BuildContext context) => MainActivity(),
+          builder: (BuildContext context) => LoginActivity(),
         ),
       );
     }
@@ -57,7 +57,7 @@ class SplashActivityState extends State<SplashActivity> {
     return Scaffold(
       body: Center(
         child: Image.asset(
-          Constants.LOGO,
+          Constants.LOGO_BLACK,
           width: SizeConfig.safeBlockHorizontal * 50.0,
           height: SizeConfig.safeBlockVertical * 50.0,
         ),

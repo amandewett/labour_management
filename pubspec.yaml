@@ -13,6 +13,8 @@ dependencies:
   fluttertoast: 4.0.1
   shimmer: 1.1.1
   curved_navigation_bar: 0.3.3
+  dio: 3.0.8
+  http: 0.12.1
   flutter:
     sdk: flutter
 
@@ -24,7 +26,8 @@ flutter:
   uses-material-design: true
   assets:
     - assets/drawables/login_bg.jpg
-    - assets/drawables/logo.png
+    - assets/drawables/logo_black.png
+    - assets/drawables/logo_white.png
   fonts:
     - family: libreBarcode
       fonts:

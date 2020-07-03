@@ -1,24 +1,27 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:labour_management/activities/SignupActivity.dart';
 import 'package:labour_management/service/WebService.dart';
-import 'package:labour_management/utils/Alerts.dart';
 import 'package:labour_management/utils/Colors.dart';
 import 'package:labour_management/utils/Constants.dart';
 import 'package:labour_management/utils/SizeConfig.dart';
 
-class LoginActivity extends StatefulWidget {
+class SignupActivity extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
-    return LoginActivityState();
+    return SignupActivityState();
   }
 }
 
-class LoginActivityState extends State<LoginActivity> {
-  var _loginFormKey = GlobalKey<FormState>();
+class SignupActivityState extends State<SignupActivity> {
+  var _signupFormKey = GlobalKey<FormState>();
+  var _userNameController = TextEditingController();
   var _userEmailController = TextEditingController();
   var _passwordController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +45,7 @@ class LoginActivityState extends State<LoginActivity> {
           ),
           SingleChildScrollView(
             child: Form(
-              key: _loginFormKey,
+              key: _signupFormKey,
               child: Container(
                 color: Colors.transparent,
                 margin: EdgeInsets.only(
@@ -74,6 +77,48 @@ class LoginActivityState extends State<LoginActivity> {
                     Container(
                       margin: EdgeInsets.only(
                         top: SizeConfig.blockSizeVertical * 5.0,
+                        left: SizeConfig.safeBlockHorizontal * 4.0,
+                        right: SizeConfig.safeBlockHorizontal * 4.0,
+                      ),
+                      child: TextFormField(
+                        controller: _userNameController,
+                        keyboardType: TextInputType.text,
+                        maxLines: 1,
+                        style: TextStyle(
+                          color: textColor,
+                          fontFamily: Constants.OPEN_SANS_FONT_FAMILY,
+                        ),
+                        decoration: InputDecoration(
+                          labelText: "Name",
+                          labelStyle: TextStyle(
+                            color: accentColor,
+                            fontSize: SizeConfig.safeBlockHorizontal * 4,
+                            fontFamily: Constants.OPEN_SANS_FONT_FAMILY,
+                          ),
+                          hintText: "Please enter your name",
+                          hintStyle: TextStyle(
+                            fontFamily: Constants.OPEN_SANS_FONT_FAMILY,
+                            color: textColor,
+                          ),
+                          border: OutlineInputBorder(),
+                          errorBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: Colors.red,
+                            ),
+                          ),
+                        ),
+                        validator: (String value) {
+                          if (value.isEmpty) {
+                            return Constants.EMPTY_FIELD_ERROR;
+                          } else {
+                            return null;
+                          }
+                        },
+                      ),
+                    ),
+                    Container(
+                      margin: EdgeInsets.only(
+                        top: SizeConfig.blockSizeVertical * 3.0,
                         left: SizeConfig.safeBlockHorizontal * 4.0,
                         right: SizeConfig.safeBlockHorizontal * 4.0,
                       ),
@@ -174,8 +219,14 @@ class LoginActivityState extends State<LoginActivity> {
                         color: primaryColor,
                         onPressed: () {
                           FocusScope.of(context).requestFocus(new FocusNode());
-                          if (_loginFormKey.currentState.validate()) {
-                            WebService().login(context, _userEmailController.text.trim(), _passwordController.text.trim());
+                          if (_signupFormKey.currentState.validate()) {
+                            WebService().signup(
+                              context,
+                              _userNameController.text.trim(),
+                              _userEmailController.text.trim(),
+                              _passwordController.text.trim(),
+                            );
+                            _userNameController.clear();
                             _userEmailController.clear();
                             _passwordController.clear();
                           }
@@ -183,7 +234,7 @@ class LoginActivityState extends State<LoginActivity> {
                         child: Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: Text(
-                            "Login",
+                            "Signup",
                             style: TextStyle(
                               color: textColor,
                               fontFamily: Constants.OPEN_SANS_FONT_FAMILY,
@@ -204,14 +255,13 @@ class LoginActivityState extends State<LoginActivity> {
                       child: InkWell(
                         onTap: () {
                           FocusScope.of(context).requestFocus(new FocusNode());
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (BuildContext context) => SignupActivity(),
-                              ));
+                          _userNameController.clear();
+                          _userEmailController.clear();
+                          _passwordController.clear();
+                          Navigator.pop(context);
                         },
                         child: Text(
-                          "Not a user ?",
+                          "Already a user ?",
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             color: Colors.white,

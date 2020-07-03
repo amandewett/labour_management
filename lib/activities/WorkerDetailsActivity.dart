@@ -8,9 +8,14 @@ import 'package:labour_management/utils/SizeConfig.dart';
 import 'package:shimmer/shimmer.dart';
 
 class WorkerDetailsActivity extends StatefulWidget {
+  final int workersId;
+  final String workersName;
+
+  WorkerDetailsActivity(this.workersId, this.workersName);
+
   @override
   State<StatefulWidget> createState() {
-    return WorkerDetailsActivityState();
+    return WorkerDetailsActivityState(this.workersId, this.workersName);
   }
 }
 
@@ -23,6 +28,10 @@ class WorkerDetailsActivityState extends State<WorkerDetailsActivity> with Singl
   int _selectedIntDate = 0;
   int _selectedIntPaymentDate = 0;
   static DateTime _currentDate = DateTime.now();
+  final int workersId;
+  final String workersName;
+
+  WorkerDetailsActivityState(this.workersId, this.workersName);
 
   @override
   void initState() {
@@ -72,7 +81,7 @@ class WorkerDetailsActivityState extends State<WorkerDetailsActivity> with Singl
                     centerTitle: true,
                     backgroundColor: primaryColor,
                     title: Text(
-                      "Worker's Name",
+                      workersName,
                       style: TextStyle(
                         fontFamily: Constants.OPEN_SANS_FONT_FAMILY,
                         fontWeight: FontWeight.bold,
