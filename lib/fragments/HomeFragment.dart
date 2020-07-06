@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:labour_management/activities/WorkerDetailsActivity.dart';
+import 'package:labour_management/models/DashboardCountersModel.dart';
 import 'package:labour_management/models/WorkersListModel.dart';
 import 'package:labour_management/service/WebService.dart';
 import 'package:labour_management/utils/Colors.dart';
@@ -21,10 +22,17 @@ class HomeFragmentState extends State<HomeFragment> {
   int _totalPresent = 0;
   int _totalAmount = 0;
   Future<List<WorkersListModel>> getWorkersList;
+  Future<DashboardCountersModel> getCounter;
 
   @override
   void initState() {
     getWorkersList = WebService().getWorkersList(context);
+    getCounter = WebService().getCounters(context);
+    getCounter.then((value) {
+      setState(() {
+        _totalLabour = value.labourCount;
+      });
+    });
     super.initState();
   }
 

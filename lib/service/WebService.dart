@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:labour_management/activities/LoginActivity.dart';
 import 'package:labour_management/activities/MainActivity.dart';
+import 'package:labour_management/models/DashboardCountersModel.dart';
 import 'package:labour_management/models/WorkersListModel.dart';
 import 'package:labour_management/utils/Alerts.dart';
 import 'package:labour_management/utils/Constants.dart';
@@ -17,7 +18,7 @@ class WebService {
   static const LOGIN = BASE_URL + "users/login"; //(POST)
   static const ADD_WORKER = BASE_URL + "workers/add"; //(POST)
   static const WORKERS_LIST = BASE_URL + "workers/list"; //(GET)
-  static const DASHBOARD_COUNTER = BASE_URL + "workers/counter"; //(GET)
+  static const DASHBOARD_COUNTER = BASE_URL + "workers/counters"; //(GET)
 
   //user login
   login(context, email, password) async {
@@ -165,4 +166,35 @@ class WebService {
       return null;
     }
   } //getWorkersList
+
+  Future<DashboardCountersModel> getCounters(context) async {
+    SharedPreferences mSharedPreferences = await SharedPreferences.getInstance();
+
+    var response = await http.get(
+      Uri.encodeFull(DASHBOARD_COUNTER),
+      headers: {
+        "Authorization": "Bearer " + mSharedPreferences.getString(Constants.JWT_TOKEN),
+      },
+    );
+
+    if (response.statusCode == 200) {
+      var jsonData = json.decode(response.body);
+      if (jsonData['status'] == true) {
+        DashboardCountersModel dashboardCountersModel = DashboardCountersModel(
+          jsonData['labour'],
+        );
+        return dashboardCountersModel;
+      } else {
+        showToast(context, jsonData['error']);
+        return null;
+      }
+    } else if (response.statusCode == 401) {
+      logout(context);
+      showToast(context, "Invalid session");
+      return null;
+    } else {
+      showToast(context, "Error");
+      return null;
+    }
+  } //getCounters
 }
