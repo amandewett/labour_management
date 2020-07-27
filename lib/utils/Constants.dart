@@ -2,6 +2,8 @@ class Constants {
   static const String APP_NAME = "Labour Management";
   static const String CODEFERNS = "Codeferns";
   static const String EMPTY_FIELD_ERROR = "Field can not be empty!";
+  static const String PRESENT = "Present";
+  static const String ABSENT = "Absent";
 
   //font families
   static const String BARCODE_FONT_FAMILY = "libreBarcode";

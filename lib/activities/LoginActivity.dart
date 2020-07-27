@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:labour_management/activities/SignupActivity.dart';
 import 'package:labour_management/service/WebService.dart';
-import 'package:labour_management/utils/Alerts.dart';
 import 'package:labour_management/utils/Colors.dart';
 import 'package:labour_management/utils/Constants.dart';
 import 'package:labour_management/utils/SizeConfig.dart';

@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:labour_management/service/WebService.dart';
 import 'package:labour_management/utils/Colors.dart';
 import 'package:labour_management/utils/Constants.dart';
 import 'package:labour_management/utils/CustomPaint.dart';
@@ -8,14 +9,15 @@ import 'package:labour_management/utils/SizeConfig.dart';
 import 'package:shimmer/shimmer.dart';
 
 class WorkerDetailsActivity extends StatefulWidget {
-  final int workersId;
-  final String workersName;
+  final int workerId;
+  final String workerName;
+  final String workerWage;
 
-  WorkerDetailsActivity(this.workersId, this.workersName);
+  WorkerDetailsActivity(this.workerId, this.workerName, this.workerWage);
 
   @override
   State<StatefulWidget> createState() {
-    return WorkerDetailsActivityState(this.workersId, this.workersName);
+    return WorkerDetailsActivityState(this.workerId, this.workerName, this.workerWage);
   }
 }
 
@@ -28,10 +30,11 @@ class WorkerDetailsActivityState extends State<WorkerDetailsActivity> with Singl
   int _selectedIntDate = 0;
   int _selectedIntPaymentDate = 0;
   static DateTime _currentDate = DateTime.now();
-  final int workersId;
-  final String workersName;
+  final int workerId;
+  final String workerName;
+  final String workerWage;
 
-  WorkerDetailsActivityState(this.workersId, this.workersName);
+  WorkerDetailsActivityState(this.workerId, this.workerName, this.workerWage);
 
   @override
   void initState() {
@@ -81,7 +84,7 @@ class WorkerDetailsActivityState extends State<WorkerDetailsActivity> with Singl
                     centerTitle: true,
                     backgroundColor: primaryColor,
                     title: Text(
-                      workersName,
+                      workerName,
                       style: TextStyle(
                         fontFamily: Constants.OPEN_SANS_FONT_FAMILY,
                         fontWeight: FontWeight.bold,
@@ -135,7 +138,9 @@ class WorkerDetailsActivityState extends State<WorkerDetailsActivity> with Singl
                       children: <Widget>[
                         MaterialButton(
                           color: Colors.white,
-                          onPressed: () {},
+                          onPressed: () {
+                            WebService().markAttendance(context, workerId, Constants.ABSENT, _selectedIntDate);
+                          },
                           child: Text(
                             "Absent",
                             style: TextStyle(
@@ -160,7 +165,9 @@ class WorkerDetailsActivityState extends State<WorkerDetailsActivity> with Singl
                         ),
                         MaterialButton(
                           color: primaryColor,
-                          onPressed: () {},
+                          onPressed: () {
+                            WebService().markAttendance(context, workerId, Constants.PRESENT, _selectedIntDate);
+                          },
                           child: Text(
                             "Present",
                             style: TextStyle(

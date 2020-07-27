@@ -177,7 +177,8 @@ class HomeFragmentState extends State<HomeFragment> {
                 width: MediaQuery.of(context).size.width,
                 child: FutureBuilder(
                   future: getWorkersList,
-                  builder: (BuildContext futureContext, AsyncSnapshot snapshot) {
+                  builder:
+                      (BuildContext futureContext, AsyncSnapshot snapshot) {
                     if (snapshot.hasData) {
                       return Container(
                         width: double.infinity,
@@ -191,13 +192,18 @@ class HomeFragmentState extends State<HomeFragment> {
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (BuildContext context) => WorkerDetailsActivity(
-                                            snapshot.data[index].workersId, snapshot.data[index].workerName),
+                                        builder: (BuildContext context) =>
+                                            WorkerDetailsActivity(
+                                          snapshot.data[index].workersId,
+                                          snapshot.data[index].workerName,
+                                          snapshot.data[index].workerWage,
+                                        ),
                                       ),
                                     );
                                   },
                                   title: Text(snapshot.data[index].workerName),
-                                  subtitle: Text(snapshot.data[index].workerWage),
+                                  subtitle:
+                                      Text(snapshot.data[index].workerWage),
                                 ),
                               ),
                             );
@@ -217,22 +223,33 @@ class HomeFragmentState extends State<HomeFragment> {
                                   child: Row(
                                     children: <Widget>[
                                       Container(
-                                        width: SizeConfig.safeBlockHorizontal * 15.0,
-                                        height: SizeConfig.safeBlockHorizontal * 15.0,
+                                        width: SizeConfig.safeBlockHorizontal *
+                                            15.0,
+                                        height: SizeConfig.safeBlockHorizontal *
+                                            15.0,
                                         color: Colors.grey,
                                       ),
                                       Expanded(
                                         child: Column(
                                           children: <Widget>[
                                             Container(
-                                              width: MediaQuery.of(context).size.width,
-                                              height: SizeConfig.safeBlockHorizontal * 3.0,
+                                              width: MediaQuery.of(context)
+                                                  .size
+                                                  .width,
+                                              height: SizeConfig
+                                                      .safeBlockHorizontal *
+                                                  3.0,
                                               margin: EdgeInsets.all(10.0),
                                               color: Colors.grey,
                                             ),
                                             Container(
-                                              width: MediaQuery.of(context).size.width / 2,
-                                              height: SizeConfig.safeBlockHorizontal * 3.0,
+                                              width: MediaQuery.of(context)
+                                                      .size
+                                                      .width /
+                                                  2,
+                                              height: SizeConfig
+                                                      .safeBlockHorizontal *
+                                                  3.0,
                                               margin: EdgeInsets.all(10.0),
                                               color: Colors.grey,
                                             ),

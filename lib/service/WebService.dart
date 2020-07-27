@@ -19,6 +19,7 @@ class WebService {
   static const ADD_WORKER = BASE_URL + "workers/add"; //(POST)
   static const WORKERS_LIST = BASE_URL + "workers/list"; //(GET)
   static const DASHBOARD_COUNTER = BASE_URL + "workers/counters"; //(GET)
+  static const MARK_ATTENDANCE = BASE_URL + "workers/markAttendance"; //(POST)
 
   //user login
   login(context, email, password) async {
@@ -197,4 +198,35 @@ class WebService {
       return null;
     }
   } //getCounters
+
+  markAttendance(context, workerId, attendance, date) async {
+    SharedPreferences mSharedPreferences = await SharedPreferences.getInstance();
+
+    Map postData = {
+      "workerId": workerId,
+      "attendance": attendance,
+      "date": date,
+    };
+
+    var response = await http.post(
+      Uri.encodeFull(MARK_ATTENDANCE),
+      headers: {
+        "Authorization": "Bearer " + mSharedPreferences.getString(Constants.JWT_TOKEN),
+        "Accept": "application/json",
+      },
+      body: json.encode(postData),
+    );
+
+    if (response.statusCode == 200) {
+      var jsonData = json.decode(response.body);
+      if (jsonData['status'] == true) {
+        showToast(context, jsonData['message']);
+      } else {
+        showToast(context, "Error");
+      }
+    } else if (response.statusCode == 401) {
+      logout(context);
+      showToast(context, "Invalid session");
+    }
+  } //markAttendance
 }
