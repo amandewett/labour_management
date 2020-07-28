@@ -230,10 +230,11 @@ class WebService {
     }
   } //markAttendance
 
-  Future<List<AttendanceModel>> getAttendance(context, workerId) async {
+
+  Future<List<Map<String, dynamic>>> getAttendance(context, workerId) async {
     SharedPreferences mSharedPreferences = await SharedPreferences.getInstance();
-    List<AttendanceModel> attendanceList = [];
-    AttendanceModel attendanceModel;
+    List<Map<String,dynamic>> attendanceList = [];
+//    AttendanceModel attendanceModel;
 
     Map postData = {
       'workerId': workerId.toString(),
@@ -251,11 +252,7 @@ class WebService {
       var jsonData = json.decode(response.body);
       if (jsonData['status'] == true) {
         for (var data in jsonData['result']) {
-          attendanceModel = AttendanceModel(
-            data['attendance'],
-            data['unixDate'],
-          );
-          attendanceList.add(attendanceModel);
+          attendanceList.add(data);
         }
         return attendanceList;
       } else {

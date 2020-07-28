@@ -22,7 +22,7 @@ class Constants {
   static const String LOGIN_BG = "assets/drawables/login_bg.jpg";
   static const String LOGO_BLACK = "assets/drawables/logo_black.png";
   static const String LOGO_WHITE = "assets/drawables/logo_white.png";
-
-  //Date formats
-  DateFormat birthdayDateFormat = DateFormat('dd-MM-yyyy');
 }
+
+//Date formats
+DateFormat dateFormat = DateFormat('dd-MM-yyyy');

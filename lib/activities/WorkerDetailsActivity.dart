@@ -1,7 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:labour_management/models/AttendanceModel.dart';
 import 'package:labour_management/service/WebService.dart';
 import 'package:labour_management/utils/Colors.dart';
 import 'package:labour_management/utils/Constants.dart';
@@ -34,7 +33,8 @@ class WorkerDetailsActivityState extends State<WorkerDetailsActivity> with Singl
   final int workerId;
   final String workerName;
   final String workerWage;
-  Future<List<AttendanceModel>> getAttendance;
+  Future<List<Map<String, dynamic>>> getAttendance;
+  List<Map<String, dynamic>> dataList = [];
 
   WorkerDetailsActivityState(this.workerId, this.workerName, this.workerWage);
 
@@ -45,7 +45,10 @@ class WorkerDetailsActivityState extends State<WorkerDetailsActivity> with Singl
     _selectedPaymentDate = "${_currentDate.day}-${_currentDate.month}-${_currentDate.year}";
     _selectedPostDate = "${_currentDate.year}-${_currentDate.month}-${_currentDate.day}";
     _selectedPostPaymentDate = "${_currentDate.year}-${_currentDate.month}-${_currentDate.day}";
-    getAttendance= WebService().getAttendance(context, workerId);
+    getAttendance = WebService().getAttendance(context, workerId);
+    getAttendance.then((value) => {
+          for (var object in value) {dataList.add(object)}
+        });
     super.initState();
   }
 
@@ -142,7 +145,17 @@ class WorkerDetailsActivityState extends State<WorkerDetailsActivity> with Singl
                         MaterialButton(
                           color: Colors.white,
                           onPressed: () {
-                            WebService().markAttendance(context, workerId, Constants.ABSENT, _selectedPostDate);
+                            setState(() {
+                              dataList.clear();
+                              WebService().markAttendance(context, workerId, Constants.ABSENT, _selectedPostDate).then((value) {
+                                setState(() {
+                                  getAttendance = WebService().getAttendance(context, workerId);
+                                  getAttendance.then((value) => {
+                                        for (var object in value) {dataList.add(object)}
+                                      });
+                                });
+                              });
+                            });
                           },
                           child: Text(
                             "Absent",
@@ -169,7 +182,17 @@ class WorkerDetailsActivityState extends State<WorkerDetailsActivity> with Singl
                         MaterialButton(
                           color: primaryColor,
                           onPressed: () {
-                            WebService().markAttendance(context, workerId, Constants.PRESENT, _selectedPostDate);
+                            setState(() {
+                              dataList.clear();
+                              WebService().markAttendance(context, workerId, Constants.PRESENT, _selectedPostDate).then((value) {
+                                setState(() {
+                                  getAttendance = WebService().getAttendance(context, workerId);
+                                  getAttendance.then((value) => {
+                                    for (var object in value) {dataList.add(object)}
+                                  });
+                                });
+                              });
+                            });
                           },
                           child: Text(
                             "Present",
@@ -208,11 +231,9 @@ class WorkerDetailsActivityState extends State<WorkerDetailsActivity> with Singl
                                 width: MediaQuery.of(context).size.width,
                                 child: SingleChildScrollView(
                                   child: FutureBuilder(
-                                    future: null,
+                                    future: getAttendance,
                                     builder: (BuildContext futureContext, AsyncSnapshot snapshot) {
                                       if (snapshot.hasData) {
-                                        return Container();
-                                      } else {
                                         return Container(
                                           child: DataTable(
                                             columns: [
@@ -228,7 +249,34 @@ class WorkerDetailsActivityState extends State<WorkerDetailsActivity> with Singl
                                               ),
                                               DataColumn(
                                                 label: Text(
-                                                  "Amount",
+                                                  "Attendance",
+                                                  style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontFamily: Constants.OPEN_SANS_FONT_FAMILY,
+                                                    fontSize: SizeConfig.safeBlockHorizontal * 5.0,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                            rows: dataList.map((element) {
+                                              return DataRow(
+                                                cells: [
+                                                  DataCell(Text(dateFormat
+                                                      .format(DateTime.fromMillisecondsSinceEpoch(element['unixDate']))
+                                                      .toString())),
+                                                  DataCell(Text(element['attendance'])),
+                                                ],
+                                              );
+                                            }).toList(),
+                                          ),
+                                        );
+                                      } else {
+                                        return Container(
+                                          child: DataTable(
+                                            columns: [
+                                              DataColumn(
+                                                label: Text(
+                                                  "Date",
                                                   style: TextStyle(
                                                     fontWeight: FontWeight.bold,
                                                     fontFamily: Constants.OPEN_SANS_FONT_FAMILY,
@@ -267,15 +315,6 @@ class WorkerDetailsActivityState extends State<WorkerDetailsActivity> with Singl
                                                   baseColor: Colors.grey.shade300,
                                                   highlightColor: Colors.white,
                                                 )),
-                                                DataCell(Shimmer.fromColors(
-                                                  child: Container(
-                                                    width: SizeConfig.safeBlockHorizontal * 15.0,
-                                                    height: 10.0,
-                                                    color: Colors.grey,
-                                                  ),
-                                                  baseColor: Colors.grey.shade300,
-                                                  highlightColor: Colors.white,
-                                                )),
                                               ]),
                                               DataRow(cells: [
                                                 DataCell(Shimmer.fromColors(
@@ -296,26 +335,8 @@ class WorkerDetailsActivityState extends State<WorkerDetailsActivity> with Singl
                                                   baseColor: Colors.grey.shade300,
                                                   highlightColor: Colors.white,
                                                 )),
-                                                DataCell(Shimmer.fromColors(
-                                                  child: Container(
-                                                    width: SizeConfig.safeBlockHorizontal * 15.0,
-                                                    height: 10.0,
-                                                    color: Colors.grey,
-                                                  ),
-                                                  baseColor: Colors.grey.shade300,
-                                                  highlightColor: Colors.white,
-                                                )),
                                               ]),
                                               DataRow(cells: [
-                                                DataCell(Shimmer.fromColors(
-                                                  child: Container(
-                                                    width: SizeConfig.safeBlockHorizontal * 15.0,
-                                                    height: 10.0,
-                                                    color: Colors.grey,
-                                                  ),
-                                                  baseColor: Colors.grey.shade300,
-                                                  highlightColor: Colors.white,
-                                                )),
                                                 DataCell(Shimmer.fromColors(
                                                   child: Container(
                                                     width: SizeConfig.safeBlockHorizontal * 15.0,
@@ -344,6 +365,7 @@ class WorkerDetailsActivityState extends State<WorkerDetailsActivity> with Singl
                                 ),
                               ),
                               new Container(
+                                color: Colors.lightGreenAccent,
                                 width: MediaQuery.of(context).size.width,
                                 child: SingleChildScrollView(
                                   child: FutureBuilder(
