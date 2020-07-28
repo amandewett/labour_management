@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:labour_management/models/AttendanceModel.dart';
 import 'package:labour_management/service/WebService.dart';
 import 'package:labour_management/utils/Colors.dart';
 import 'package:labour_management/utils/Constants.dart';
@@ -27,12 +28,13 @@ class WorkerDetailsActivityState extends State<WorkerDetailsActivity> with Singl
   TabController _tabController;
   String _selectedDate = "";
   String _selectedPaymentDate = "";
-  int _selectedIntDate = 0;
-  int _selectedIntPaymentDate = 0;
+  String _selectedPostDate = "";
+  String _selectedPostPaymentDate = "";
   static DateTime _currentDate = DateTime.now();
   final int workerId;
   final String workerName;
   final String workerWage;
+  Future<List<AttendanceModel>> getAttendance;
 
   WorkerDetailsActivityState(this.workerId, this.workerName, this.workerWage);
 
@@ -41,8 +43,9 @@ class WorkerDetailsActivityState extends State<WorkerDetailsActivity> with Singl
     _tabController = new TabController(length: 2, vsync: this);
     _selectedDate = "${_currentDate.day}-${_currentDate.month}-${_currentDate.year}";
     _selectedPaymentDate = "${_currentDate.day}-${_currentDate.month}-${_currentDate.year}";
-    _selectedIntDate = _currentDate.millisecondsSinceEpoch;
-    _selectedIntPaymentDate = _currentDate.millisecondsSinceEpoch;
+    _selectedPostDate = "${_currentDate.year}-${_currentDate.month}-${_currentDate.day}";
+    _selectedPostPaymentDate = "${_currentDate.year}-${_currentDate.month}-${_currentDate.day}";
+    getAttendance= WebService().getAttendance(context, workerId);
     super.initState();
   }
 
@@ -139,7 +142,7 @@ class WorkerDetailsActivityState extends State<WorkerDetailsActivity> with Singl
                         MaterialButton(
                           color: Colors.white,
                           onPressed: () {
-                            WebService().markAttendance(context, workerId, Constants.ABSENT, _selectedIntDate);
+                            WebService().markAttendance(context, workerId, Constants.ABSENT, _selectedPostDate);
                           },
                           child: Text(
                             "Absent",
@@ -166,7 +169,7 @@ class WorkerDetailsActivityState extends State<WorkerDetailsActivity> with Singl
                         MaterialButton(
                           color: primaryColor,
                           onPressed: () {
-                            WebService().markAttendance(context, workerId, Constants.PRESENT, _selectedIntDate);
+                            WebService().markAttendance(context, workerId, Constants.PRESENT, _selectedPostDate);
                           },
                           child: Text(
                             "Present",
@@ -502,7 +505,7 @@ class WorkerDetailsActivityState extends State<WorkerDetailsActivity> with Singl
       lastDate: DateTime(4000),
     ).then((newDate) {
       setState(() {
-        _selectedIntDate = newDate.millisecondsSinceEpoch;
+        _selectedPostDate = "${newDate.year}-${newDate.month}-${newDate.day}";
         _selectedDate = "${newDate.day}-${newDate.month}-${newDate.year}";
       });
     });
@@ -516,7 +519,7 @@ class WorkerDetailsActivityState extends State<WorkerDetailsActivity> with Singl
       lastDate: DateTime(4000),
     ).then((newDate) {
       setState(() {
-        _selectedIntPaymentDate = newDate.millisecondsSinceEpoch;
+        _selectedPostPaymentDate = "${newDate.year}-${newDate.month}-${newDate.day}";
         _selectedPaymentDate = "${newDate.day}-${newDate.month}-${newDate.year}";
       });
     });
