@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:labour_management/models/WorkerTotalAmountModel.dart';
 import 'package:labour_management/service/WebService.dart';
 import 'package:labour_management/utils/Colors.dart';
 import 'package:labour_management/utils/Constants.dart';
@@ -34,7 +35,10 @@ class WorkerDetailsActivityState extends State<WorkerDetailsActivity> with Singl
   final String workerName;
   final String workerWage;
   Future<List<Map<String, dynamic>>> getAttendance;
-  List<Map<String, dynamic>> dataList = [];
+  List<Map<String, dynamic>> attendanceList = [];
+  Future<List<Map<String, dynamic>>> getPayments;
+  List<Map<String, dynamic>> paymentsList = [];
+  Future<WorkerTotalAmountModel> totalAmountPaid;
 
   WorkerDetailsActivityState(this.workerId, this.workerName, this.workerWage);
 
@@ -47,8 +51,13 @@ class WorkerDetailsActivityState extends State<WorkerDetailsActivity> with Singl
     _selectedPostPaymentDate = "${_currentDate.year}-${_currentDate.month}-${_currentDate.day}";
     getAttendance = WebService().getAttendance(context, workerId);
     getAttendance.then((value) => {
-          for (var object in value) {dataList.add(object)}
+          for (var object in value) {attendanceList.add(object)}
         });
+    getPayments = WebService().getPayments(context, workerId);
+    getPayments.then((value) => {
+          for (var object in value) {paymentsList.add(object)}
+        });
+    totalAmountPaid = WebService().getPaymentsTotal(context, workerId);
     super.initState();
   }
 
@@ -122,13 +131,30 @@ class WorkerDetailsActivityState extends State<WorkerDetailsActivity> with Singl
                       mainAxisSize: MainAxisSize.max,
                       children: <Widget>[
                         Container(
-                          child: Text(
-                            "₹ 5000",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontFamily: Constants.OPEN_SANS_FONT_FAMILY,
-                              fontSize: SizeConfig.safeBlockHorizontal * 10.0,
-                            ),
+                          child: FutureBuilder(
+                            future: totalAmountPaid,
+                            builder: (BuildContext futureContext, AsyncSnapshot snapshot) {
+                              if (snapshot.hasData) {
+                                return Text(
+                                  "₹ ${snapshot.data.amount}",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontFamily: Constants.OPEN_SANS_FONT_FAMILY,
+                                    fontSize: SizeConfig.safeBlockHorizontal * 10.0,
+                                  ),
+                                );
+                              } else {
+                                return Shimmer.fromColors(
+                                  child: Container(
+                                    width: SizeConfig.safeBlockHorizontal * 10.0,
+                                    height: 15.0,
+                                    color: Colors.grey,
+                                  ),
+                                  baseColor: Colors.grey.shade300,
+                                  highlightColor: Colors.white,
+                                );
+                              }
+                            },
                           ),
                         ),
                         Container(
@@ -157,12 +183,12 @@ class WorkerDetailsActivityState extends State<WorkerDetailsActivity> with Singl
                           color: Colors.white,
                           onPressed: () {
                             setState(() {
-                              dataList.clear();
+                              attendanceList.clear();
                               WebService().markAttendance(context, workerId, Constants.ABSENT, _selectedPostDate).then((value) {
                                 setState(() {
                                   getAttendance = WebService().getAttendance(context, workerId);
                                   getAttendance.then((value) => {
-                                        for (var object in value) {dataList.add(object)}
+                                        for (var object in value) {attendanceList.add(object)}
                                       });
                                 });
                               });
@@ -194,12 +220,12 @@ class WorkerDetailsActivityState extends State<WorkerDetailsActivity> with Singl
                           color: primaryColor,
                           onPressed: () {
                             setState(() {
-                              dataList.clear();
+                              attendanceList.clear();
                               WebService().markAttendance(context, workerId, Constants.PRESENT, _selectedPostDate).then((value) {
                                 setState(() {
                                   getAttendance = WebService().getAttendance(context, workerId);
                                   getAttendance.then((value) => {
-                                        for (var object in value) {dataList.add(object)}
+                                        for (var object in value) {attendanceList.add(object)}
                                       });
                                 });
                               });
@@ -269,7 +295,7 @@ class WorkerDetailsActivityState extends State<WorkerDetailsActivity> with Singl
                                                 ),
                                               ),
                                             ],
-                                            rows: dataList.map((element) {
+                                            rows: attendanceList.map((element) {
                                               return DataRow(
                                                 cells: [
                                                   DataCell(
@@ -399,10 +425,62 @@ class WorkerDetailsActivityState extends State<WorkerDetailsActivity> with Singl
                                 width: MediaQuery.of(context).size.width,
                                 child: SingleChildScrollView(
                                   child: FutureBuilder(
-                                    future: null,
+                                    future: getPayments,
                                     builder: (BuildContext futureContext, AsyncSnapshot snapshot) {
                                       if (snapshot.hasData) {
-                                        return Container();
+                                        return Container(
+                                          child: DataTable(
+                                            columns: [
+                                              DataColumn(
+                                                label: Text(
+                                                  "Date",
+                                                  style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontFamily: Constants.OPEN_SANS_FONT_FAMILY,
+                                                    fontSize: SizeConfig.safeBlockHorizontal * 5.0,
+                                                  ),
+                                                ),
+                                              ),
+                                              DataColumn(
+                                                label: Text(
+                                                  "Amount",
+                                                  style: TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontFamily: Constants.OPEN_SANS_FONT_FAMILY,
+                                                    fontSize: SizeConfig.safeBlockHorizontal * 5.0,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                            rows: paymentsList.map((element) {
+                                              return DataRow(
+                                                cells: [
+                                                  DataCell(
+                                                    Text(
+                                                      dateFormat
+                                                          .format(DateTime.fromMillisecondsSinceEpoch(element['unixDate']))
+                                                          .toString(),
+                                                      style: TextStyle(
+                                                        fontFamily: Constants.OPEN_SANS_FONT_FAMILY,
+                                                        fontSize: SizeConfig.safeBlockHorizontal * 3.5,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  DataCell(
+                                                    Text(
+                                                      element['amount'].toString(),
+                                                      style: TextStyle(
+                                                        fontFamily: Constants.OPEN_SANS_FONT_FAMILY,
+                                                        fontSize: SizeConfig.safeBlockHorizontal * 3.5,
+                                                        fontWeight: FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              );
+                                            }).toList(),
+                                          ),
+                                        );
                                       } else {
                                         return Container(
                                           child: DataTable(
@@ -542,104 +620,128 @@ class WorkerDetailsActivityState extends State<WorkerDetailsActivity> with Singl
 
   _addPaymentDialog() {
     return showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (BuildContext dialogContext) {
-          return StatefulBuilder(
-            builder: (statefulContext, setState) {
-              return AlertDialog(
-                title: Container(
-                  width: MediaQuery.of(dialogContext).size.width,
-                  child: Center(child: Text("Add Payment")),
-                ),
-                content: SingleChildScrollView(
-                  child: Form(
-                    key: _newPaymentFormKey,
-                    child: Container(
-                      width: MediaQuery.of(dialogContext).size.width,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.max,
-                        children: <Widget>[
-                          InkWell(
-                            onTap: () {
-                              _paymentDatePicker(setState);
-                            },
-                            child: Shimmer.fromColors(
-                              child: Text(
-                                _selectedPaymentDate,
-                                style: TextStyle(
-                                  fontFamily: Constants.OPEN_SANS_FONT_FAMILY,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: SizeConfig.safeBlockHorizontal * 5.0,
-                                ),
-                              ),
-                              baseColor: primaryColor,
-                              highlightColor: primaryLightColor,
-                            ),
-                          ),
-                          Container(
-                            padding: EdgeInsets.only(
-                              top: SizeConfig.safeBlockVertical * 3.0,
-                            ),
-                            child: TextFormField(
-                              controller: _paymentAmountController,
-                              keyboardType: TextInputType.number,
-                              maxLines: 1,
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) {
+        return StatefulBuilder(
+          builder: (statefulContext, setStatee) {
+            return AlertDialog(
+              title: Container(
+                width: MediaQuery.of(dialogContext).size.width,
+                child: Center(child: Text("Add Payment")),
+              ),
+              content: SingleChildScrollView(
+                child: Form(
+                  key: _newPaymentFormKey,
+                  child: Container(
+                    width: MediaQuery.of(dialogContext).size.width,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.max,
+                      children: <Widget>[
+                        InkWell(
+                          onTap: () {
+                            _paymentDatePicker(setStatee);
+                          },
+                          child: Shimmer.fromColors(
+                            child: Text(
+                              _selectedPaymentDate,
                               style: TextStyle(
-                                color: dashboardCounterColor,
+                                fontFamily: Constants.OPEN_SANS_FONT_FAMILY,
+                                fontWeight: FontWeight.bold,
+                                fontSize: SizeConfig.safeBlockHorizontal * 5.0,
+                              ),
+                            ),
+                            baseColor: primaryColor,
+                            highlightColor: primaryLightColor,
+                          ),
+                        ),
+                        Container(
+                          padding: EdgeInsets.only(
+                            top: SizeConfig.safeBlockVertical * 3.0,
+                          ),
+                          child: TextFormField(
+                            controller: _paymentAmountController,
+                            keyboardType: TextInputType.number,
+                            maxLines: 1,
+                            style: TextStyle(
+                              color: dashboardCounterColor,
+                              fontFamily: Constants.OPEN_SANS_FONT_FAMILY,
+                            ),
+                            decoration: InputDecoration(
+                              labelText: "Amount",
+                              labelStyle: TextStyle(
+                                color: primaryColor,
+                                fontSize: SizeConfig.safeBlockHorizontal * 4,
                                 fontFamily: Constants.OPEN_SANS_FONT_FAMILY,
                               ),
-                              decoration: InputDecoration(
-                                labelText: "Amount",
-                                labelStyle: TextStyle(
-                                  color: primaryColor,
-                                  fontSize: SizeConfig.safeBlockHorizontal * 4,
-                                  fontFamily: Constants.OPEN_SANS_FONT_FAMILY,
-                                ),
-                                hintText: "Please enter a amount",
-                                hintStyle: TextStyle(
-                                  fontFamily: Constants.OPEN_SANS_FONT_FAMILY,
-                                  color: dashboardCounterColor,
-                                ),
-                                border: OutlineInputBorder(),
-                                errorBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(
-                                    color: Colors.red,
-                                  ),
+                              hintText: "Please enter a amount",
+                              hintStyle: TextStyle(
+                                fontFamily: Constants.OPEN_SANS_FONT_FAMILY,
+                                color: dashboardCounterColor,
+                              ),
+                              border: OutlineInputBorder(),
+                              errorBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                  color: Colors.red,
                                 ),
                               ),
-                              validator: (String value) {
-                                if (value.isEmpty) {
-                                  return Constants.EMPTY_FIELD_ERROR;
-                                } else {
-                                  return null;
-                                }
-                              },
                             ),
+                            validator: (String value) {
+                              if (value.isEmpty) {
+                                return Constants.EMPTY_FIELD_ERROR;
+                              } else {
+                                return null;
+                              }
+                            },
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-                actions: <Widget>[
-                  FlatButton(
-                    onPressed: () {
-                      FocusScope.of(context).requestFocus(new FocusNode());
-                      Navigator.pop(context);
-                    },
-                    child: Text("Cancel"),
-                  ),
-                  FlatButton(
-                      onPressed: () {
-                        FocusScope.of(context).requestFocus(new FocusNode());
-                        Navigator.pop(context);
-                      },
-                      child: Text("Ok")),
-                ],
-              );
-            },
-          );
-        });
+              ),
+              actions: <Widget>[
+                FlatButton(
+                  onPressed: () {
+                    FocusScope.of(context).requestFocus(new FocusNode());
+                    Navigator.pop(context);
+                  },
+                  child: Text("Cancel"),
+                ),
+                FlatButton(
+                  onPressed: () {
+                    FocusScope.of(context).requestFocus(new FocusNode());
+                    setState(() {
+                      paymentsList.clear();
+                      WebService()
+                          .addPayment(context, workerId, _selectedPostPaymentDate, _paymentAmountController.text.trim())
+                          .then(
+                            (boolValue) => {
+                              if (boolValue)
+                                {
+                                  setStatee(() {
+                                    _paymentAmountController.clear();
+                                  }),
+                                  Navigator.pop(context),
+                                  setState(() {
+                                    totalAmountPaid = WebService().getPaymentsTotal(context, workerId);
+                                    getPayments = WebService().getPayments(context, workerId);
+                                    getPayments.then((value) => {
+                                          for (var object in value) {paymentsList.add(object)}
+                                        });
+                                  }),
+                                },
+                            },
+                          );
+                    });
+                  },
+                  child: Text("Ok"),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
   }
 }

@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:labour_management/activities/LoginActivity.dart';
 import 'package:labour_management/activities/MainActivity.dart';
 import 'package:labour_management/models/DashboardCountersModel.dart';
+import 'package:labour_management/models/WorkerTotalAmountModel.dart';
 import 'package:labour_management/models/WorkersListModel.dart';
 import 'package:labour_management/utils/Alerts.dart';
 import 'package:labour_management/utils/Constants.dart';
@@ -12,8 +13,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class WebService {
   static const STATIC_HEADERS = {"Accept": "application/json"};
-  static const BASE_URL = "http://100.100.100.4:3001/"; //localhost
-//  static const BASE_URL = ""; //production
+//  static const BASE_URL = "http://100.100.100.4:3001/"; //localhost
+  static const BASE_URL = "https://ed7e27ee49a4.ngrok.io/"; //production
   static const SIGNUP = BASE_URL + "users/signup"; //(POST)
   static const LOGIN = BASE_URL + "users/login"; //(POST)
   static const ADD_WORKER = BASE_URL + "workers/add"; //(POST)
@@ -23,6 +24,7 @@ class WebService {
   static const ATTENDANCE_LIST = BASE_URL + "attendance/myAttendance"; //(POST)
   static const ADD_PAYMENT = BASE_URL + "payments/add"; //(POST)
   static const PAYMENT_LIST = BASE_URL + "payments/list"; //(POST)
+  static const PAYMENT_TOTAL = BASE_URL + "payments/total/"; //(GET)
 
   //user login
   login(context, email, password) async {
@@ -185,6 +187,8 @@ class WebService {
       if (jsonData['status'] == true) {
         DashboardCountersModel dashboardCountersModel = DashboardCountersModel(
           jsonData['labour'],
+          jsonData['amount'],
+          jsonData['attendance'],
         );
         return dashboardCountersModel;
       } else {
@@ -234,7 +238,6 @@ class WebService {
   Future<List<Map<String, dynamic>>> getAttendance(context, workerId) async {
     SharedPreferences mSharedPreferences = await SharedPreferences.getInstance();
     List<Map<String, dynamic>> attendanceList = [];
-//    AttendanceModel attendanceModel;
 
     Map postData = {
       'workerId': workerId.toString(),
@@ -263,6 +266,9 @@ class WebService {
       logout(context);
       showToast(context, "Invalid session");
       return attendanceList;
+    } else {
+      showToast(context, response.statusCode.toString());
+      return attendanceList;
     }
   } //getAttendance
 
@@ -270,7 +276,7 @@ class WebService {
     SharedPreferences mSharedPreferences = await SharedPreferences.getInstance();
 
     Map postData = {
-      'workerId': workerId,
+      'workerId': workerId.toString(),
       'date': date,
       'amount': amount,
     };
@@ -298,4 +304,73 @@ class WebService {
       return false;
     }
   } //addPayment
+
+  Future<List<Map<String, dynamic>>> getPayments(context, workerId) async {
+    SharedPreferences mSharedPreferences = await SharedPreferences.getInstance();
+    List<Map<String, dynamic>> paymentList = [];
+
+    Map postData = {
+      'workerId': workerId.toString(),
+    };
+
+    var response = await http.post(
+      Uri.encodeFull(PAYMENT_LIST),
+      headers: {
+        "Authorization": "Bearer " + mSharedPreferences.getString(Constants.JWT_TOKEN),
+      },
+      body: postData,
+    );
+
+    if (response.statusCode == 200) {
+      var jsonData = json.decode(response.body);
+      if (jsonData['status'] == true) {
+        for (var data in jsonData['result']) {
+          paymentList.add(data);
+        }
+        return paymentList;
+      } else {
+        showToast(context, "Error");
+        return paymentList;
+      }
+    } else if (response.statusCode == 401) {
+      logout(context);
+      showToast(context, "Invalid session");
+      return paymentList;
+    } else {
+      showToast(context, response.statusCode.toString());
+      return paymentList;
+    }
+  } //getPayments
+
+  Future<WorkerTotalAmountModel> getPaymentsTotal(context, workerId) async {
+    SharedPreferences mSharedPreferences = await SharedPreferences.getInstance();
+    WorkerTotalAmountModel workerTotalAmountModel;
+
+    var response = await http.get(
+      Uri.encodeFull(PAYMENT_TOTAL + workerId.toString()),
+      headers: {
+        "Authorization": "Bearer " + mSharedPreferences.getString(Constants.JWT_TOKEN),
+      },
+    );
+
+    if (response.statusCode == 200) {
+      var jsonData = json.decode(response.body);
+      if (jsonData['status'] == true) {
+        workerTotalAmountModel=WorkerTotalAmountModel(
+          jsonData['result'].toString(),
+        );
+        return workerTotalAmountModel;
+      } else {
+        showToast(context, "Error");
+        return workerTotalAmountModel;
+      }
+    } else if (response.statusCode == 401) {
+      logout(context);
+      showToast(context, "Invalid session");
+      return workerTotalAmountModel;
+    } else {
+      showToast(context, response.statusCode.toString());
+      return workerTotalAmountModel;
+    }
+  } //getPaymentsTotal
 }

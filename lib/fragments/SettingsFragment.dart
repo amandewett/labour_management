@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:labour_management/service/WebService.dart';
 import 'package:labour_management/utils/Colors.dart';
 import 'package:labour_management/utils/Constants.dart';
 import 'package:labour_management/utils/CustomPaint.dart';
@@ -35,12 +36,25 @@ class SettingsFragmentState extends State<SettingsFragment> {
               automaticallyImplyLeading: false,
               centerTitle: true,
               backgroundColor: primaryColor,
-              title: Text(
-                "Settings",
-                style: TextStyle(
-                  fontFamily: Constants.OPEN_SANS_FONT_FAMILY,
-                  fontWeight: FontWeight.bold,
-                  fontSize: SizeConfig.safeBlockHorizontal * 6.0,
+              actions: <Widget>[
+                InkWell(
+                  onTap: () {
+                    WebService().logout(context);
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Icon(Icons.power_settings_new),
+                  ),
+                ),
+              ],
+              title: Container(
+                child: Text(
+                  "Settings",
+                  style: TextStyle(
+                    fontFamily: Constants.OPEN_SANS_FONT_FAMILY,
+                    fontWeight: FontWeight.bold,
+                    fontSize: SizeConfig.safeBlockHorizontal * 6.0,
+                  ),
                 ),
               ),
             ),
