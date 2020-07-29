@@ -89,13 +89,24 @@ class WorkerDetailsActivityState extends State<WorkerDetailsActivity> with Singl
                     automaticallyImplyLeading: true,
                     centerTitle: true,
                     backgroundColor: primaryColor,
-                    title: Text(
-                      workerName,
-                      style: TextStyle(
-                        fontFamily: Constants.OPEN_SANS_FONT_FAMILY,
-                        fontWeight: FontWeight.bold,
-                        fontSize: SizeConfig.safeBlockHorizontal * 6.0,
-                      ),
+                    title: Column(
+                      children: <Widget>[
+                        Text(
+                          workerName,
+                          style: TextStyle(
+                            fontFamily: Constants.OPEN_SANS_FONT_FAMILY,
+                            fontWeight: FontWeight.bold,
+                            fontSize: SizeConfig.safeBlockHorizontal * 6.0,
+                          ),
+                        ),
+                        Text(
+                          '₹ ${workerWage.toString()}/day',
+                          style: TextStyle(
+                            fontFamily: Constants.OPEN_SANS_FONT_FAMILY,
+                            fontSize: SizeConfig.safeBlockHorizontal * 4.0,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   Container(
@@ -188,8 +199,8 @@ class WorkerDetailsActivityState extends State<WorkerDetailsActivity> with Singl
                                 setState(() {
                                   getAttendance = WebService().getAttendance(context, workerId);
                                   getAttendance.then((value) => {
-                                    for (var object in value) {dataList.add(object)}
-                                  });
+                                        for (var object in value) {dataList.add(object)}
+                                      });
                                 });
                               });
                             });
@@ -261,10 +272,30 @@ class WorkerDetailsActivityState extends State<WorkerDetailsActivity> with Singl
                                             rows: dataList.map((element) {
                                               return DataRow(
                                                 cells: [
-                                                  DataCell(Text(dateFormat
-                                                      .format(DateTime.fromMillisecondsSinceEpoch(element['unixDate']))
-                                                      .toString())),
-                                                  DataCell(Text(element['attendance'])),
+                                                  DataCell(
+                                                    Text(
+                                                      dateFormat
+                                                          .format(DateTime.fromMillisecondsSinceEpoch(element['unixDate']))
+                                                          .toString(),
+                                                      style: TextStyle(
+                                                        fontFamily: Constants.OPEN_SANS_FONT_FAMILY,
+                                                        fontSize: SizeConfig.safeBlockHorizontal * 3.5,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  DataCell(
+                                                    Text(
+                                                      element['attendance'],
+                                                      style: TextStyle(
+                                                        fontFamily: Constants.OPEN_SANS_FONT_FAMILY,
+                                                        fontSize: SizeConfig.safeBlockHorizontal * 3.5,
+                                                        fontWeight: FontWeight.bold,
+                                                        color: element['attendance'] == Constants.PRESENT
+                                                            ? Colors.green
+                                                            : Colors.red,
+                                                      ),
+                                                    ),
+                                                  ),
                                                 ],
                                               );
                                             }).toList(),
@@ -365,7 +396,6 @@ class WorkerDetailsActivityState extends State<WorkerDetailsActivity> with Singl
                                 ),
                               ),
                               new Container(
-                                color: Colors.lightGreenAccent,
                                 width: MediaQuery.of(context).size.width,
                                 child: SingleChildScrollView(
                                   child: FutureBuilder(
@@ -397,16 +427,6 @@ class WorkerDetailsActivityState extends State<WorkerDetailsActivity> with Singl
                                                   ),
                                                 ),
                                               ),
-                                              DataColumn(
-                                                label: Text(
-                                                  "Attendance",
-                                                  style: TextStyle(
-                                                    fontWeight: FontWeight.bold,
-                                                    fontFamily: Constants.OPEN_SANS_FONT_FAMILY,
-                                                    fontSize: SizeConfig.safeBlockHorizontal * 5.0,
-                                                  ),
-                                                ),
-                                              ),
                                             ],
                                             rows: [
                                               DataRow(cells: [
@@ -428,15 +448,6 @@ class WorkerDetailsActivityState extends State<WorkerDetailsActivity> with Singl
                                                   baseColor: Colors.grey.shade300,
                                                   highlightColor: Colors.white,
                                                 )),
-                                                DataCell(Shimmer.fromColors(
-                                                  child: Container(
-                                                    width: SizeConfig.safeBlockHorizontal * 15.0,
-                                                    height: 10.0,
-                                                    color: Colors.grey,
-                                                  ),
-                                                  baseColor: Colors.grey.shade300,
-                                                  highlightColor: Colors.white,
-                                                )),
                                               ]),
                                               DataRow(cells: [
                                                 DataCell(Shimmer.fromColors(
@@ -457,26 +468,8 @@ class WorkerDetailsActivityState extends State<WorkerDetailsActivity> with Singl
                                                   baseColor: Colors.grey.shade300,
                                                   highlightColor: Colors.white,
                                                 )),
-                                                DataCell(Shimmer.fromColors(
-                                                  child: Container(
-                                                    width: SizeConfig.safeBlockHorizontal * 15.0,
-                                                    height: 10.0,
-                                                    color: Colors.grey,
-                                                  ),
-                                                  baseColor: Colors.grey.shade300,
-                                                  highlightColor: Colors.white,
-                                                )),
                                               ]),
                                               DataRow(cells: [
-                                                DataCell(Shimmer.fromColors(
-                                                  child: Container(
-                                                    width: SizeConfig.safeBlockHorizontal * 15.0,
-                                                    height: 10.0,
-                                                    color: Colors.grey,
-                                                  ),
-                                                  baseColor: Colors.grey.shade300,
-                                                  highlightColor: Colors.white,
-                                                )),
                                                 DataCell(Shimmer.fromColors(
                                                   child: Container(
                                                     width: SizeConfig.safeBlockHorizontal * 15.0,
@@ -524,7 +517,7 @@ class WorkerDetailsActivityState extends State<WorkerDetailsActivity> with Singl
       context: context,
       initialDate: DateTime.now(),
       firstDate: DateTime(2000),
-      lastDate: DateTime(4000),
+      lastDate: DateTime.now(),
     ).then((newDate) {
       setState(() {
         _selectedPostDate = "${newDate.year}-${newDate.month}-${newDate.day}";
@@ -538,7 +531,7 @@ class WorkerDetailsActivityState extends State<WorkerDetailsActivity> with Singl
       context: context,
       initialDate: DateTime.now(),
       firstDate: DateTime(2000),
-      lastDate: DateTime(4000),
+      lastDate: DateTime.now(),
     ).then((newDate) {
       setState(() {
         _selectedPostPaymentDate = "${newDate.year}-${newDate.month}-${newDate.day}";

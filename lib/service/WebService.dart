@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:labour_management/activities/LoginActivity.dart';
 import 'package:labour_management/activities/MainActivity.dart';
-import 'package:labour_management/models/AttendanceModel.dart';
 import 'package:labour_management/models/DashboardCountersModel.dart';
 import 'package:labour_management/models/WorkersListModel.dart';
 import 'package:labour_management/utils/Alerts.dart';
@@ -13,7 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class WebService {
   static const STATIC_HEADERS = {"Accept": "application/json"};
-  static const BASE_URL = "http://100.100.100.4:3000/"; //localhost
+  static const BASE_URL = "http://100.100.100.4:3001/"; //localhost
 //  static const BASE_URL = ""; //production
   static const SIGNUP = BASE_URL + "users/signup"; //(POST)
   static const LOGIN = BASE_URL + "users/login"; //(POST)
@@ -22,6 +21,8 @@ class WebService {
   static const DASHBOARD_COUNTER = BASE_URL + "workers/counters"; //(GET)
   static const MARK_ATTENDANCE = BASE_URL + "attendance/markAttendance"; //(POST)
   static const ATTENDANCE_LIST = BASE_URL + "attendance/myAttendance"; //(POST)
+  static const ADD_PAYMENT = BASE_URL + "payments/add"; //(POST)
+  static const PAYMENT_LIST = BASE_URL + "payments/list"; //(POST)
 
   //user login
   login(context, email, password) async {
@@ -230,10 +231,9 @@ class WebService {
     }
   } //markAttendance
 
-
   Future<List<Map<String, dynamic>>> getAttendance(context, workerId) async {
     SharedPreferences mSharedPreferences = await SharedPreferences.getInstance();
-    List<Map<String,dynamic>> attendanceList = [];
+    List<Map<String, dynamic>> attendanceList = [];
 //    AttendanceModel attendanceModel;
 
     Map postData = {
@@ -264,5 +264,38 @@ class WebService {
       showToast(context, "Invalid session");
       return attendanceList;
     }
-  } //markAttendance
+  } //getAttendance
+
+  Future<bool> addPayment(context, workerId, date, amount) async {
+    SharedPreferences mSharedPreferences = await SharedPreferences.getInstance();
+
+    Map postData = {
+      'workerId': workerId,
+      'date': date,
+      'amount': amount,
+    };
+
+    var response = await http.post(
+      Uri.encodeFull(ADD_PAYMENT),
+      headers: {
+        "Authorization": "Bearer " + mSharedPreferences.getString(Constants.JWT_TOKEN),
+      },
+      body: postData,
+    );
+
+    if (response.statusCode == 200) {
+      var jsonData = json.decode(response.body);
+      if (jsonData['status'] == true) {
+        return true;
+      } else {
+        return false;
+      }
+    } else if (response.statusCode == 401) {
+      logout(context);
+      showToast(context, "Invalid session");
+      return false;
+    } else {
+      return false;
+    }
+  } //addPayment
 }
